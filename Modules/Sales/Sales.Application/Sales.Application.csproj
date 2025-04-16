@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\Inventory\Inventory.Application.Contracts\Inventory.Application.Contracts.csproj" />
+		<ProjectReference Include="..\Sales.Application.Contracts\Sales.Application.Contracts.csproj" />
+		<ProjectReference Include="..\Sales.Domain\Sales.Domain.csproj" />
+	</ItemGroup>
+
+</Project>
