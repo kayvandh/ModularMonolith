@@ -1,4 +1,4 @@
-using Inventory.Application.Contracts;
+using Inventory.Application.Contracts.Interfaces;
 using Inventory.Application.Services;
 
 namespace Inventory.Api
