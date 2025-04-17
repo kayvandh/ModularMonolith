@@ -29,14 +29,14 @@ namespace Identity.Infrastructure.Services
             // سایر Claims دلخواه
         };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenConfig.Value.SecretKey));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_tokenConfig.Value.Key));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
                 issuer: _tokenConfig.Value.Issuer,
                 audience: _tokenConfig.Value.Audience,
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(_tokenConfig.Value.ExpiryDurationInMinutes),
+                expires: DateTime.Now.AddMinutes(_tokenConfig.Value.ExpiresInMinutes),
                 signingCredentials: creds
             );
 

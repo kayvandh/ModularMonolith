@@ -8,9 +8,9 @@ namespace Identity.Application.Configuration
 {
     public class TokenConfiguration
     {
-        public string SecretKey { get; set; }
-        public int ExpiryDurationInMinutes { get; set; }
+        public string Key { get; set; }  
         public string Issuer { get; set; }
         public string Audience { get; set; }
+        public int ExpiresInMinutes { get; set; }
     }
 }

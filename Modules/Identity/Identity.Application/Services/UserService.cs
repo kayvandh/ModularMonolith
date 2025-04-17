@@ -26,7 +26,9 @@ namespace Identity.Application.Services
             var user = new ApplicationUser
             {
                 UserName = model.UserName,
-                FullName = model.FullName
+                FullName = model.FullName,
+                Address = model.Address,
+                Email = model.UserName
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);

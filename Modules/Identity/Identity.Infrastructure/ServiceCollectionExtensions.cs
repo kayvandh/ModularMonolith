@@ -14,9 +14,9 @@ namespace Identity.Infrastructure
         public static IServiceCollection AddIdentityServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddDbContext<IdentityDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));            
+                options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
-            services.AddIdentity<IdentityDbContext, IdentityRole>()
+            services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<IdentityDbContext>()
                 .AddDefaultTokenProviders();
 

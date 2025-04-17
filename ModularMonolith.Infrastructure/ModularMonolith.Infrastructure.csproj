@@ -14,12 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Modules\Identity\Identity.Domain\Identity.Domain.csproj" />
-    <ProjectReference Include="..\Modules\Identity\Identity.Infrastructure\Identity.Infrastructure.csproj" />
-    <ProjectReference Include="..\Modules\Inventory\Inventory.Domain\Inventory.Domain.csproj" />
-    <ProjectReference Include="..\Modules\Inventory\Inventory.Infrastructure\Inventory.Infrastructure.csproj" />
-    <ProjectReference Include="..\Modules\Sales\Sales.Domain\Sales.Domain.csproj" />
-    <ProjectReference Include="..\Modules\Sales\Sales.Infrastructure\Sales.Infrastructure.csproj" />
+    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,8 @@
 ﻿using Identity.Domain;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace Identity.Infrastructure.DbContexts
 {
@@ -8,5 +10,6 @@ namespace Identity.Infrastructure.DbContexts
     {
         public IdentityDbContext(DbContextOptions<IdentityDbContext> options)
             : base(options) { }
+
     }
 }
