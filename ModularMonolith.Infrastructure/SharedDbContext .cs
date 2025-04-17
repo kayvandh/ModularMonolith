@@ -16,16 +16,16 @@ namespace ModularMonolith.Infrastructure
         {
             base.OnModelCreating(modelBuilder);
 
-            var appliedAssemblies = new HashSet<Assembly>();
+            //var appliedAssemblies = new HashSet<Assembly>();
 
             foreach (var dbContext in _moduleDbContexts)
-            {
-                var assembly = dbContext.GetType().Assembly;
+            {               
+                modelBuilder.ApplyConfigurationsFromAssembly(dbContext.GetType().Assembly);
 
-                if (appliedAssemblies.Add(assembly))
-                {
-                    modelBuilder.ApplyConfigurationsFromAssembly(assembly);
-                }
+                //if (appliedAssemblies.Add(assembly))
+                //{
+                //    modelBuilder.ApplyConfigurationsFromAssembly(assembly);
+                //}
             }
         }
     }

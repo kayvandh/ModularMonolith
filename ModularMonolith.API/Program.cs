@@ -7,13 +7,10 @@ using Inventory.Infrastructure;
 using Inventory.Infrastructure.DbContexts;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using ModularMonolith.Infrastructure;
 using Sales.Infrastructure;
 using Sales.Infrastructure.DbContexts;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 

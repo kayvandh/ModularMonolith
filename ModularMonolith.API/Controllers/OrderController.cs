@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Framework.ApiResponse;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Sales.Application.Contracts.Interfaces;
+using Sales.Application.Commands;
 
 namespace ModularMonolith.API.Controllers
 {
@@ -9,19 +9,18 @@ namespace ModularMonolith.API.Controllers
     [Route("api/[controller]")]
     public class OrderController : ControllerBase
     {
-        private readonly IOrderService _orderService;
+        private readonly IMediator _mediator;
 
-        public OrderController(IOrderService orderService)
+        public OrderController(IMediator mediator)
         {
-            _orderService = orderService;
+            _mediator = mediator;
         }
 
-        [HttpPost("place")]
-        [Authorize(Roles = "Admin")] // فقط ادمین می‌تونه سفارش بده
-        public IActionResult PlaceOrder(string productCode, int quantity)
+        [HttpPost("place-order")]
+        public async Task<IActionResult> PlaceOrder([FromBody] OrderCommand orderCommand)
         {
-            var message = _orderService.PlaceOrder(productCode, quantity);
-            return Ok(new { result = message });
+            var result = await _mediator.Send(orderCommand);
+            return result.ToApiResponse(); 
         }
     }
 

@@ -1,6 +1,8 @@
-﻿using Inventory.Application.Contracts.Interfaces;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Azure.Core;
+using Framework.ApiResponse;
+using Inventory.Application.Commands;
+using Inventory.Application.Queries;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ModularMonolith.API.Controllers
@@ -9,19 +11,25 @@ namespace ModularMonolith.API.Controllers
     [Route("api/[controller]")]
     public class InventoryController : ControllerBase
     {
-        private readonly IStockService _stockService;
+        private readonly IMediator _mediator;
 
-        public InventoryController(IStockService stockService)
+        public InventoryController(IMediator mediator)
         {
-            _stockService = stockService;
+            _mediator = mediator;
         }
 
-        [HttpGet("check-stock")]
-        [Authorize(Roles = "Admin,User")]
-        public IActionResult CheckStock(string productCode, int quantity)
+        [HttpGet("{productId}")]
+        public async Task<IActionResult> GetStock(GetStockQuery request)
         {
-            var result = _stockService.HasStock(productCode, quantity);
-            return Ok(new { available = result });
+            var stock = await _mediator.Send(request);
+            return stock.ToApiResponse();
+        }
+
+        [HttpPost("decrease")]
+        public async Task<IActionResult> DecreaseStock([FromBody] DecreaseStockCommand command)
+        {
+            var result = await _mediator.Send(command);
+            return result.ToApiResponse();
         }
     }
 }

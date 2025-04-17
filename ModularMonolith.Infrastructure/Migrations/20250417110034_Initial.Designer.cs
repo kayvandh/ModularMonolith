@@ -12,8 +12,8 @@ using ModularMonolith.Infrastructure;
 namespace ModularMonolith.Infrastructure.Migrations
 {
     [DbContext(typeof(SharedDbContext))]
-    [Migration("20250417102826_initial")]
-    partial class initial
+    [Migration("20250417110034_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
