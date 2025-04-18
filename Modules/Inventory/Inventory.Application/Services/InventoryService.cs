@@ -1,7 +1,7 @@
 ﻿using Inventory.Application.Commands;
 using Inventory.Application.Queries;
 using MediatR;
-using ModularMonolith.Contract.Inventory.Interfaces;
+using Common.Contract.Inventory.Interfaces;
 using System;
 using System.Threading.Tasks;
 

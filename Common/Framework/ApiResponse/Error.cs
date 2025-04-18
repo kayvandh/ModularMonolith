@@ -10,11 +10,16 @@ namespace Framework.ApiResponse
     {
         public string Code { get; set; }
         public string Message { get; set; }
+        public Error()
+        {
 
+        }
         public Error(string message, string code = "General")
         {
             Message = message;
             Code = code;
         }
+
+
     }
 }

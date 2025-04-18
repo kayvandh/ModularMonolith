@@ -1,4 +1,5 @@
-﻿using Identity.Application.Configuration;
+﻿using HealthChecks.UI.Client;
+using Identity.Application.Configuration;
 using Identity.Application.Interfaces;
 using Identity.Infrastructure;
 using Identity.Infrastructure.DbContexts;
@@ -6,11 +7,15 @@ using Identity.Infrastructure.Services;
 using Inventory.Infrastructure;
 using Inventory.Infrastructure.DbContexts;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 using ModularMonolith.Infrastructure;
 using Sales.Infrastructure;
 using Sales.Infrastructure.DbContexts;
+using ModularMonolith.API.Middlewares;
+using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,8 +38,6 @@ builder.Services.AddDbContext<SharedDbContext>((serviceProvider, options) =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 // 
 
-
-builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.Configure<TokenConfiguration>(builder.Configuration.GetSection("TokenConfiguration"));
 
 builder.Services.AddAuthentication(options =>
@@ -86,9 +89,27 @@ builder.Services.AddSwaggerGen(c =>
 
 });
 
+builder.Services.AddHealthChecks()
+    .AddSqlServer(
+        connectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
+        name: "ApplicationDb",
+        healthQuery: "SELECT 1;",
+        failureStatus: HealthStatus.Unhealthy,
+        tags: new[] { "db", "sql", "app" }
+    );
+builder.Services.AddHealthChecksUI(opt =>
+{
+    opt.SetEvaluationTimeInSeconds(10); // هر 10 ثانیه یک بار بررسی
+    opt.MaximumHistoryEntriesPerEndpoint(60);
+    opt.SetApiMaxActiveRequests(1);
+}).AddInMemoryStorage();
+
+builder.Services.AddFluentValidationAutoValidation();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -96,12 +117,29 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseAuthentication(); 
-app.UseAuthorization(); 
+
+
 
 app.MapControllers();
 
 app.UseHttpsRedirection();
 app.UseRouting();
+
+app.UseGeneralExceptionHandling();
+
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapHealthChecks("/health", new HealthCheckOptions
+    {
+        Predicate = _ => true,
+        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+    });
+
+    endpoints.MapHealthChecksUI(); // اگه از UI استفاده می‌کنی
+});
 
 app.Run();

@@ -11,7 +11,8 @@
     <PackageReference Include="MediatR" Version="12.5.0" />
   </ItemGroup>
 	<ItemGroup>
-		<ProjectReference Include="..\..\Common\ModularMonolith.Contract\ModularMonolith.Contract.csproj" />
+		<ProjectReference Include="..\..\Common\Common.Contract\Common.Contract.csproj" />
+		<ProjectReference Include="..\..\Common\ModularMonolith.Contract\Common.Contract.csproj" />
 		<ProjectReference Include="..\Sales.Domain\Sales.Domain.csproj" />
 	</ItemGroup>
 	<ItemGroup>

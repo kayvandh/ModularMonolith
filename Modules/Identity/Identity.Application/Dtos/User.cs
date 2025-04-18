@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Identity.Application.Contracts.Models
+namespace Identity.Application.Dtos
 {
-    public class UserResult
+    public class User
     {
         public bool Succeeded { get; set; }
         public string Token { get; set; }
-        public List<string> Errors { get; set; } = new();
     }
 }

@@ -3,7 +3,8 @@ using Inventory.Infrastructure.DbContexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using ModularMonolith.Contract.Inventory.Interfaces;
+using Common.Contract.Inventory.Interfaces;
+using System.Reflection;
 
 namespace Inventory.Infrastructure
 {
@@ -11,6 +12,8 @@ namespace Inventory.Infrastructure
     {
         public static IServiceCollection AddInventoryServices(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+
             services.AddDbContext<InventoryDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 

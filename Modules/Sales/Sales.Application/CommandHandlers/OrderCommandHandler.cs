@@ -3,7 +3,7 @@ using MediatR;
 using Sales.Application.Commands;
 using Sales.Domain;
 using Sales.Application.Interfaces.Repositories;
-using ModularMonolith.Contract.Inventory.Interfaces;
+using Common.Contract.Inventory.Interfaces;
 
 namespace Sales.Application.CommandHandlers
 {

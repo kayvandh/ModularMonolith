@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ModularMonolith.Contract.Inventory.Interfaces
+﻿namespace Common.Contract.Inventory.Interfaces
 {
     public interface IInventoryService
     {

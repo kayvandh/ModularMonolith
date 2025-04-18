@@ -1,40 +1,27 @@
-﻿using Identity.Application.Contracts.Models;
-using Identity.Application.Contracts;
+﻿using Framework.ApiResponse;
+using Identity.Application.Command;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ModularMonolith.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    public class AuthController(IMediator mediator) : ControllerBase
     {
-        private readonly IUserService _userService;
-
-        public AuthController(IUserService userService)
-        {
-            _userService = userService;
-        }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterUserModel model)
+        public async Task<IActionResult> Register([FromBody] RegisterUserCommand command)
         {
-            var result = await _userService.RegisterUserAsync(model);
-
-            if (!result.Succeeded)
-                return BadRequest(new { errors = result.Errors });
-
-            return Ok(new { token = result.Token });
+            var restul = await mediator.Send(command);  
+            return restul.ToApiResponse();
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginModel model)
-        {
-            var result = await _userService.SignInUserAsync(model);
-
-            if (!result.Succeeded)
-                return Unauthorized(new { errors = result.Errors });
-
-            return Ok(new { token = result.Token });
+        public async Task<IActionResult> Login([FromBody] LoginCommand command)
+        { 
+            var restul = await mediator.Send(command);  
+            return restul.ToApiResponse();
         }
     }
 }
