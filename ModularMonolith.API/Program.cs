@@ -1,9 +1,8 @@
-﻿using HealthChecks.UI.Client;
+﻿using FluentValidation.AspNetCore;
+using HealthChecks.UI.Client;
 using Identity.Application.Configuration;
-using Identity.Application.Interfaces;
 using Identity.Infrastructure;
 using Identity.Infrastructure.DbContexts;
-using Identity.Infrastructure.Services;
 using Inventory.Infrastructure;
 using Inventory.Infrastructure.DbContexts;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -11,11 +10,10 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
+using ModularMonolith.API.Middlewares;
 using ModularMonolith.Infrastructure;
 using Sales.Infrastructure;
 using Sales.Infrastructure.DbContexts;
-using ModularMonolith.API.Middlewares;
-using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -99,7 +97,7 @@ builder.Services.AddHealthChecks()
     );
 builder.Services.AddHealthChecksUI(opt =>
 {
-    opt.SetEvaluationTimeInSeconds(10); // هر 10 ثانیه یک بار بررسی
+    opt.SetEvaluationTimeInSeconds(10);
     opt.MaximumHistoryEntriesPerEndpoint(60);
     opt.SetApiMaxActiveRequests(1);
 }).AddInMemoryStorage();
@@ -117,8 +115,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    Predicate = _ => true,
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 
-
+app.MapHealthChecksUI();
 
 app.MapControllers();
 
@@ -127,19 +130,7 @@ app.UseRouting();
 
 app.UseGeneralExceptionHandling();
 
-
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.UseEndpoints(endpoints =>
-{
-    endpoints.MapHealthChecks("/health", new HealthCheckOptions
-    {
-        Predicate = _ => true,
-        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-    });
-
-    endpoints.MapHealthChecksUI(); // اگه از UI استفاده می‌کنی
-});
 
 app.Run();
