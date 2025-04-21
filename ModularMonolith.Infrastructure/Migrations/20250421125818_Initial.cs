@@ -127,6 +127,8 @@ namespace ModularMonolith.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
                     OrderNo = table.Column<int>(type: "int", nullable: false),
                     Customer = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false)
@@ -147,6 +149,26 @@ namespace ModularMonolith.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Product", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ScheduledJob",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    JobType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Payload = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ScheduleTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ScheduledAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ExecutedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
+                    Error = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ScheduledJob", x => x.Id);
                 });
         }
 
@@ -179,6 +201,9 @@ namespace ModularMonolith.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Product");
+
+            migrationBuilder.DropTable(
+                name: "ScheduledJob");
         }
     }
 }

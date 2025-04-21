@@ -10,7 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Common\Framework\Framework.csproj" />
     <ProjectReference Include="..\..\Common\Common.Contract\Common.Contract.csproj" />
-    <ProjectReference Include="..\..\Common\ModularMonolith.Contract\Common.Contract.csproj" />
+    <ProjectReference Include="..\..\Common\Common.Contract\Common.Contract.csproj" />
     <ProjectReference Include="..\Inventory.Domain\Inventory.Domain.csproj" />
   </ItemGroup>
 </Project>

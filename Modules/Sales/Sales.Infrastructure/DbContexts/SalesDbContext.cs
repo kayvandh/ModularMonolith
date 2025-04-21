@@ -8,5 +8,6 @@ namespace Sales.Infrastructure.DbContexts
         public SalesDbContext(DbContextOptions<SalesDbContext> options) : base(options) { }
 
         public DbSet<Order> Orders { get; set; }
+        public DbSet<ScheduledJob> ScheduledJobs { get; set; }
     }
 }

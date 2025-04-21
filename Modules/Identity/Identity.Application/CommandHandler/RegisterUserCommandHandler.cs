@@ -35,7 +35,7 @@ namespace Identity.Application.CommandHandler
             }
 
             return Result.Fail("Register Failed")
-                .WithErrors(result.Errors.Select(e => new Framework.FluentResultsAddOn.FluentError(e.Code, e.Description)).ToList());
+                .WithErrors(result.Errors.Select(e => new FluentError(e.Code, e.Description)).ToList());
 
         }
     }

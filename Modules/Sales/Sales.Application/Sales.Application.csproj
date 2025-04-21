@@ -12,7 +12,6 @@
   </ItemGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\..\Common\Common.Contract\Common.Contract.csproj" />
-		<ProjectReference Include="..\..\Common\ModularMonolith.Contract\Common.Contract.csproj" />
 		<ProjectReference Include="..\Sales.Domain\Sales.Domain.csproj" />
 	</ItemGroup>
 	<ItemGroup>

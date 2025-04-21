@@ -1,6 +1,6 @@
 ﻿using FluentResults;
 
-namespace Framework.FluentResultsAddOn
+namespace FluentResults
 {
     public class FluentError : IError
     {

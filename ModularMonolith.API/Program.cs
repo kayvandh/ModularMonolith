@@ -14,6 +14,7 @@ using ModularMonolith.API.Middlewares;
 using ModularMonolith.Infrastructure;
 using Sales.Infrastructure;
 using Sales.Infrastructure.DbContexts;
+using Sales.Infrastructure.Jobs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -87,26 +88,31 @@ builder.Services.AddSwaggerGen(c =>
 
 });
 
-builder.Services.AddHealthChecks()
-    .AddSqlServer(
-        connectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
-        name: "ApplicationDb",
-        healthQuery: "SELECT 1;",
-        failureStatus: HealthStatus.Unhealthy,
-        tags: new[] { "db", "sql", "app" }
-    );
-builder.Services.AddHealthChecksUI(opt =>
-{
-    opt.SetEvaluationTimeInSeconds(10);
-    opt.MaximumHistoryEntriesPerEndpoint(60);
-    opt.SetApiMaxActiveRequests(1);
-}).AddInMemoryStorage();
+//builder.Services.AddHealthChecks()
+//    .AddSqlServer(
+//        connectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
+//        name: "ApplicationDb",
+//        healthQuery: "SELECT 1;",
+//        failureStatus: HealthStatus.Unhealthy,
+//        tags: new[] { "db", "sql", "app" }
+//    );
+//builder.Services.AddHealthChecksUI(opt =>
+//{
+//    opt.SetEvaluationTimeInSeconds(10);
+//    opt.MaximumHistoryEntriesPerEndpoint(60);
+//    opt.SetApiMaxActiveRequests(1);
+//}).AddInMemoryStorage();
 
 builder.Services.AddFluentValidationAutoValidation();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+
+using (var scope = app.Services.CreateScope())
+{
+    await QuartzStartup.ScheduleAllJobsAsync(scope.ServiceProvider);
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -115,13 +121,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapHealthChecks("/health", new HealthCheckOptions
-{
-    Predicate = _ => true,
-    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-});
+//app.MapHealthChecks("/health", new HealthCheckOptions
+//{
+//    Predicate = _ => true,
+//    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+//});
 
-app.MapHealthChecksUI();
+//app.MapHealthChecksUI();
 
 app.MapControllers();
 
