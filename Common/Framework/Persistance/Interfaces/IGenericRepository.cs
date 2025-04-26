@@ -32,7 +32,7 @@ namespace Framework.Persistance.Interfaces
             CancellationToken cancellationToken = default,
             params Expression<Func<T, object>>[] includes);
 
-        IQueryable<T> GetQueryable(
+        Task<IQueryable<T>> GetQueryableAsync(
             CancellationToken cancellationToken = default,
             params Expression<Func<T, object>>[] includes);
 
@@ -42,9 +42,11 @@ namespace Framework.Persistance.Interfaces
 
         Task<decimal> SumAsync(
             Expression<Func<T, decimal>> selector,
+            Expression<Func<T, bool>>? predicate = null,
             CancellationToken cancellationToken = default);
-        Task<decimal> AverageAsync(
+        Task<decimal> AvgAsync(
             Expression<Func<T, decimal>> selector, 
+            Expression<Func<T, bool>>? predicate = null, 
             CancellationToken cancellationToken = default);
 
         Task AddAsync(T entity, CancellationToken cancellationToken = default);

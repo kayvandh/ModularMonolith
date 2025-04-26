@@ -11,17 +11,31 @@ namespace Framework.Persistance
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
-        private readonly DbSet<T> _dbSet;
-        private readonly DbContext _dbContext;
+        private readonly DbSet<T> dbSet;
+        private readonly DbContext dbContext;
+
+        //public delegate Task<Expression<Func<T, bool>>> SecurityPredicateDelegate(CancellationToken cancellationToken);
+        //private readonly SecurityPredicateDelegate _applySecurityPredicate;
+
+        private readonly Func<CancellationToken, Task<Expression<Func<T, bool>>>>? securityFilterFunc;
+
+
         public GenericRepository(DbContext dbContext)
         {
-            _dbContext = dbContext;
-            _dbSet = dbContext.Set<T>();
+            this.dbContext = dbContext;
+            this.dbSet = dbContext.Set<T>();            
+        }
+
+        public GenericRepository(DbContext dbContext, Func<CancellationToken, Task<Expression<Func<T, bool>>>>? securityFilterFunc = null)
+        {
+            this.dbContext = dbContext;
+            this.dbSet = dbContext.Set<T>();
+            this.securityFilterFunc = securityFilterFunc;
         }
 
         public async Task<T?> GetByIdAsync(object id, CancellationToken cancellationToken = default)
         {
-            return await _dbSet.FindAsync(new object[] { id }, cancellationToken);
+            return await dbSet.FindAsync(new object[] { id }, cancellationToken);
         }
 
         public async Task<ListResult<T>> GetAllAsync(
@@ -30,7 +44,10 @@ namespace Framework.Persistance
               Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
               params Expression<Func<T, object>>[] includes)
         {
-            IQueryable<T> query = _dbSet.AsQueryable();
+            IQueryable<T> query = dbSet.AsQueryable();
+
+            query = await ApplySecurityFilterAsync(query, cancellationToken);
+
             query = ApplyIncludes(query, includes);
 
             if (orderBy != null)
@@ -62,7 +79,11 @@ namespace Framework.Persistance
             Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
             params Expression<Func<T, object>>[] includes)
         {
-            IQueryable<T> query = _dbSet.Where(predicate);
+            var query = dbSet.AsQueryable();
+
+            query = await ApplySecurityFilterAsync(query, cancellationToken);
+            query = query.Where(predicate);
+
             query = ApplyIncludes(query, includes);
 
             if (orderBy != null)
@@ -93,7 +114,9 @@ namespace Framework.Persistance
             PageRequest? pageRequest = null,
             CancellationToken cancellationToken = default)
         {
-            IQueryable<T> query = _dbSet.AsQueryable();
+            IQueryable<T> query = dbSet.AsQueryable();
+
+            query = await ApplySecurityFilterAsync(query, cancellationToken);
 
             if (specification.Criteria != null)
             {
@@ -130,21 +153,23 @@ namespace Framework.Persistance
             CancellationToken cancellationToken = default,
             params Expression<Func<T, object>>[] includes)
         {
-            IQueryable<T> query = _dbSet.Where(predicate);
+            IQueryable<T> query = dbSet.AsQueryable();
+
+            query = await ApplySecurityFilterAsync(query, cancellationToken);
+            query = query.Where(predicate);
 
             query = ApplyIncludes(query, includes);
 
             return await query.FirstOrDefaultAsync(cancellationToken);
         }
 
-        public  IQueryable<T> GetQueryable(
+        public async Task<IQueryable<T>> GetQueryableAsync(
             CancellationToken cancellationToken = default,
             params Expression<Func<T, object>>[] includes)
         {
-            IQueryable<T> query = _dbSet.AsQueryable();
-
+            IQueryable<T> query = dbSet.AsQueryable();
+            query = await ApplySecurityFilterAsync(query, cancellationToken);
             query = ApplyIncludes(query, includes);
-
             return query;
         }
 
@@ -152,42 +177,60 @@ namespace Framework.Persistance
             Expression<Func<T, bool>>? predicate = null,
             CancellationToken cancellationToken = default)
         {
-            if (predicate != null)
-                return await _dbSet.CountAsync(predicate, cancellationToken);
+            IQueryable<T> query = dbSet.AsQueryable();
 
-            return await _dbSet.CountAsync(cancellationToken);
+            query = await ApplySecurityFilterAsync(query, cancellationToken);
+
+            if (predicate != null)
+                query = query.Where(predicate);
+
+            return await query.CountAsync(cancellationToken);
         }
 
         public async Task<decimal> SumAsync(
-            Expression<Func<T, decimal>> selector,
+            Expression<Func<T, decimal>> selector, 
+            Expression<Func<T, bool>>? predicate = null, 
             CancellationToken cancellationToken = default)
         {
-            return await _dbSet.SumAsync(selector, cancellationToken);
+            IQueryable<T> query = dbSet.AsQueryable();
 
+            query = await ApplySecurityFilterAsync(query, cancellationToken);
+
+            if (predicate != null)
+                query = query.Where(predicate);
+
+            return await query.SumAsync(selector, cancellationToken);
         }
 
-        public async Task<decimal> AverageAsync(
-            Expression<Func<T, decimal>> selector,
+        public async Task<decimal> AvgAsync(
+            Expression<Func<T, decimal>> selector, 
+            Expression<Func<T, bool>>? predicate = null, 
             CancellationToken cancellationToken = default)
         {
-            return await _dbSet.AverageAsync(selector, cancellationToken);
+            IQueryable<T> query = dbSet.AsQueryable();
+
+            query = await ApplySecurityFilterAsync(query, cancellationToken);
+            if (predicate != null)
+                query = query.Where(predicate);
+
+            return await query.AverageAsync(selector, cancellationToken);
 
         }
 
         public async Task AddAsync(T entity, CancellationToken cancellationToken = default)
         {
-            await _dbContext.Set<T>().AddAsync(entity, cancellationToken);
+            await dbContext.Set<T>().AddAsync(entity, cancellationToken);
         }
 
         public void Update(T entity)
         {
-            _dbSet.Update(entity);
+            dbSet.Update(entity);
             
         }
 
         public void Delete(T entity)
         {
-            _dbSet.Remove(entity);            
+            dbSet.Remove(entity);            
         }
 
         //
@@ -202,6 +245,17 @@ namespace Framework.Persistance
                 }
             }
 
+            return query;
+        }
+
+        private async Task<IQueryable<T>> ApplySecurityFilterAsync(IQueryable<T> query, CancellationToken cancellationToken)
+        {
+            if (securityFilterFunc != null)
+            {
+                var predicate = await securityFilterFunc(cancellationToken);
+                if (predicate != null)
+                    query = query.Where(predicate);
+            }
             return query;
         }
 

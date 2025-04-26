@@ -8,5 +8,6 @@ namespace Inventory.Infrastructure.DbContexts
         public InventoryDbContext(DbContextOptions<InventoryDbContext> options) : base(options) { }
 
         public DbSet<Product> Products { get; set; }
+        public DbSet<InventoryRoleEntityTypePermission> RoleEntityTypePermissions { get; set; }
     }
 }
