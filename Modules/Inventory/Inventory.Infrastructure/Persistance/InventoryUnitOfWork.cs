@@ -149,6 +149,62 @@ namespace Inventory.Infrastructure.Persistance
             return await Task.FromResult(lambda);
         }
 
+        //protected async Task<Expression<Func<T, bool>>> CreateSecurityPredicateAsync<T>(
+        //        Guid userId,
+        //        List<InventoryRoleEntityTypePermission> entityPermissions,
+        //        CancellationToken cancellationToken = default) where T : class
+        //{
+        //    if (!typeof(ISecureEntity).IsAssignableFrom(typeof(T)))
+        //    {
+        //        return x => true;
+        //    }
+
+        //    var readableEntityTypeIds = entityPermissions
+        //        .Where(p => p.CanRead)
+        //        .Select(p => p.EntityTypeId)
+        //        .Distinct()
+        //        .ToList();
+
+        //    var mustCheckOwnOnlyEntityTypeIds = entityPermissions
+        //        .Where(p => p.CanRead && p.CanReadOwnOnly)
+        //        .Select(p => p.EntityTypeId)
+        //        .Distinct()
+        //        .ToList();
+
+        //    var parameter = Expression.Parameter(typeof(T), "e");
+
+        //    var entityTypeIdProp = Expression.Property(Expression.Convert(parameter, typeof(ISecureEntity)), nameof(ISecureEntity.EntityTypeId));
+        //    var createdByProp = Expression.Property(Expression.Convert(parameter, typeof(ISecureEntity)), nameof(ISecureEntity.CreatedBy));
+
+        //    var entityTypeIdContains = Expression.Call(
+        //        Expression.Constant(readableEntityTypeIds),
+        //        typeof(List<Guid>).GetMethod("Contains", new[] { typeof(Guid) })!,
+        //        entityTypeIdProp
+        //    );
+
+        //    var ownOnlyEntityTypeContains = Expression.Call(
+        //        Expression.Constant(mustCheckOwnOnlyEntityTypeIds),
+        //        typeof(List<Guid>).GetMethod("Contains", new[] { typeof(Guid) })!,
+        //        entityTypeIdProp
+        //    );
+
+        //    var createdByEquals = Expression.Equal(
+        //        createdByProp,
+        //        Expression.Constant(userId)
+        //    );
+
+        //    var ownOnlyCondition = Expression.AndAlso(
+        //        ownOnlyEntityTypeContains,
+        //        createdByEquals
+        //    );
+
+        //    var finalPredicate = Expression.OrElse(entityTypeIdContains, ownOnlyCondition);
+
+        //    var lambda = Expression.Lambda<Func<T, bool>>(finalPredicate, parameter);
+
+        //    return await Task.FromResult(lambda);
+        //}
+
         private Expression BuildPermissionCondition<T>(ParameterExpression parameter, InventoryRoleEntityTypePermission permission) where T : class
         {
             // Build EntityTypeId condition
@@ -163,8 +219,7 @@ namespace Inventory.Infrastructure.Persistance
                 var userIdConstant = Expression.Constant(userId);
                 var createdByCondition = Expression.Equal(createdByProperty, userIdConstant);
 
-                // Combine both
-                return Expression.AndAlso(entityTypeIdCondition, createdByCondition);
+                // Combine bothreturn Expression.AndAlso(entityTypeIdCondition, createdByCondition);
             }
             else
             {
