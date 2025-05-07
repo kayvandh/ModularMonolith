@@ -226,6 +226,10 @@ namespace Inventory.Infrastructure.Persistance
                 // Only EntityTypeId check
                 return entityTypeIdCondition;
             }
+
+
+            // Must remove
+            return null;
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Inventory.Application.QueryHandlers
         {
             var product = await _repository.GetByIdAsync(request.Id);
             if (product == null)
-                return Result.Fail("محصول مورد نظر یافت نشد.");
+                return Result.Fail(Common.Resource.Message.NotFound);
 
             return Result.Ok(mapper.Map<Dtos.Product>(product));
         }

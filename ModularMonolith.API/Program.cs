@@ -1,14 +1,12 @@
-﻿using FluentValidation.AspNetCore;
-using HealthChecks.UI.Client;
+﻿using Framework.ApiResponse;
 using Identity.Application.Configuration;
 using Identity.Infrastructure;
 using Identity.Infrastructure.DbContexts;
 using Inventory.Infrastructure;
 using Inventory.Infrastructure.DbContexts;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 using ModularMonolith.API.Middlewares;
 using ModularMonolith.Infrastructure;
@@ -69,7 +67,7 @@ builder.Services.AddSwaggerGen(c =>
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
-        Description = "برای دسترسی به APIهای محافظت‌شده، توکن JWT را در این فیلد وارد کنید. \n\nمثال: Bearer eyJhbGciOiJIUzI1NiIsInR...",
+        Description = "Secured API, Insert JWT Token Here. Sample: Bearer eyJhbGciOiJIUzI1NiIsInR...",
         Reference = new OpenApiReference
         {
             Id = JwtBearerDefaults.AuthenticationScheme,
@@ -88,6 +86,15 @@ builder.Services.AddSwaggerGen(c =>
 
 });
 
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        return context.ToApiResponse();
+    };
+});
+
+
 //builder.Services.AddHealthChecks()
 //    .AddSqlServer(
 //        connectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
@@ -103,7 +110,7 @@ builder.Services.AddSwaggerGen(c =>
 //    opt.SetApiMaxActiveRequests(1);
 //}).AddInMemoryStorage();
 
-builder.Services.AddFluentValidationAutoValidation();
+
 
 var app = builder.Build();
 
