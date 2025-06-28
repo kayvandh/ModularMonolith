@@ -1,4 +1,6 @@
 ﻿using Framework.ApiResponse;
+using Framework.Cache;
+using Framework.Cache.Interface;
 using Identity.Application.Configuration;
 using Identity.Infrastructure;
 using Identity.Infrastructure.DbContexts;
@@ -7,12 +9,21 @@ using Inventory.Infrastructure.DbContexts;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using ModularMonolith.API.Attributes;
 using ModularMonolith.API.Middlewares;
+using ModularMonolith.API.Settings;
 using ModularMonolith.Infrastructure;
 using Sales.Infrastructure;
 using Sales.Infrastructure.DbContexts;
 using Sales.Infrastructure.Jobs;
+using Serilog;
+using Serilog.Events;
+using Serilog.Sinks.Elasticsearch;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,9 +57,14 @@ builder.Services.AddAuthentication(options =>
 {
     builder.Configuration.Bind("TokenConfiguration", options);
 });
+builder.Services.AddScoped<CacheInvalidationFilter>();
+
+builder.Services.AddControllers(options =>
+{
+    options.Filters.AddService<CacheInvalidationFilter>();
+});
 
 builder.Services.AddAuthorization();
-builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
@@ -94,6 +110,35 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     };
 });
 
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .CreateLogger();
+
+builder.Host.UseSerilog(Log.Logger);
+
+builder.Services.Configure<CacheSettings>(builder.Configuration.GetSection("CacheSettings"));
+
+builder.Services.AddMemoryCache();
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+});
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(
+    _ => ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis"))
+);
+
+builder.Services.AddScoped<ICacheService>(provider =>
+{
+    var settings = provider.GetRequiredService<IOptions<CacheSettings>>().Value;
+    return settings.Provider switch
+    {
+        CacheProvider.Redis => new RedisCacheService(provider.GetRequiredService<IDistributedCache>(), provider.GetRequiredService<IConnectionMultiplexer>()),
+        _ => new MemoryCacheService(provider.GetRequiredService<IMemoryCache>())
+    };
+});
+
 
 //builder.Services.AddHealthChecks()
 //    .AddSqlServer(
@@ -112,9 +157,12 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 
 
 
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+
+app.UseSerilogRequestLogging();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -142,8 +190,10 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseGeneralExceptionHandling();
+app.UseResponseCaching();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
 
 app.Run();

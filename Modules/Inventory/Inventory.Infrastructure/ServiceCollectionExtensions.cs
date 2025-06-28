@@ -1,7 +1,9 @@
 ﻿using Common.Contract.Inventory.Interfaces;
 using Inventory.Application;
+using Inventory.Application.Interfaces.Repositories;
 using Inventory.Application.Services;
 using Inventory.Infrastructure.DbContexts;
+using Inventory.Infrastructure.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,7 +22,8 @@ namespace Inventory.Infrastructure
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<IInventoryService, InventoryService>();
-            //services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IStockRepository, StockRepository>();
 
             return services;
         }

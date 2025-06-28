@@ -4,6 +4,7 @@ using Sales.Application.Commands;
 using Sales.Domain;
 using Sales.Application.Interfaces.Repositories;
 using Common.Contract.Inventory.Interfaces;
+using Framework.Cache.Interface;
 
 namespace Sales.Application.CommandHandlers
 {
@@ -11,11 +12,13 @@ namespace Sales.Application.CommandHandlers
     {
         private readonly IInventoryService inventoryService;  
         private readonly IOrderRepository orderRepository;
+        private readonly ICacheService cacheService;
 
-        public OrderCommandHandler(IInventoryService inventoryService, IOrderRepository orderRepository)
+        public OrderCommandHandler(IInventoryService inventoryService, IOrderRepository orderRepository, ICacheService cacheService)
         {
             inventoryService = inventoryService;
             orderRepository = orderRepository;
+            this.cacheService = cacheService;
         }
 
         public async Task<Result> Handle(OrderCommand request, CancellationToken cancellationToken)

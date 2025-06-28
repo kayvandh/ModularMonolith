@@ -2,7 +2,11 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
+using Quartz.Simpl;
+using Sales.Application.Commands;
+using Sales.Application.Interfaces.Repositories;
 using Sales.Application.Interfaces.Services;
+using Sales.Application.Persistance;
 using Sales.Application.UseCases;
 using Sales.Infrastructure.DbContexts;
 using Sales.Infrastructure.Jobs.DynamicJobs;
@@ -16,14 +20,15 @@ namespace Sales.Infrastructure
     {
         public static IServiceCollection AddSalesServices(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+            //services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(OrderCommand).Assembly));
 
             services.AddDbContext<SalesDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
             ConfigureQuartz(services, configuration);
 
-            //services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddScoped<IOrderRepository, OrderRepository>();
 
             return services;
 
@@ -58,7 +63,7 @@ namespace Sales.Infrastructure
             services.AddScoped<SendSmsJob>();
 
 
-            services.ConfigureOptions<LoggingBackGroundJobSetup>();
+            //services.ConfigureOptions<LoggingBackGroundJobSetup>();
         }
     }
 }

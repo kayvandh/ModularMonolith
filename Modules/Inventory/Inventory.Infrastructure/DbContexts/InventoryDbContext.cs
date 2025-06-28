@@ -1,5 +1,6 @@
 ﻿using Inventory.Domain;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace Inventory.Infrastructure.DbContexts
 {
@@ -9,5 +10,11 @@ namespace Inventory.Infrastructure.DbContexts
 
         public DbSet<Product> Products { get; set; }
         public DbSet<InventoryRoleEntityTypePermission> RoleEntityTypePermissions { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+            base.OnModelCreating(modelBuilder);
+        }
     }
 }

@@ -10,6 +10,10 @@ namespace Identity.Infrastructure.DbContexts
     {
         public IdentityDbContext(DbContextOptions<IdentityDbContext> options)
             : base(options) { }
-
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+            base.OnModelCreating(modelBuilder);
+        }
     }
 }

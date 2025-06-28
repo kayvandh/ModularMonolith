@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sales.Domain;
+using System.Reflection;
 
 namespace Sales.Infrastructure.DbContexts
 {
@@ -9,5 +10,11 @@ namespace Sales.Infrastructure.DbContexts
 
         public DbSet<Order> Orders { get; set; }
         public DbSet<ScheduledJob> ScheduledJobs { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+            base.OnModelCreating(modelBuilder);
+        }
     }
 }

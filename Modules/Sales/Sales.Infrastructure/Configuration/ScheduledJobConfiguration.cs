@@ -13,6 +13,8 @@ namespace Sales.Infrastructure.Configuration
     {
         public void Configure(EntityTypeBuilder<ScheduledJob> builder)
         {
+            builder.ToTable(nameof(ScheduledJob));
+
             builder.HasKey(p => p.Id);
             builder.Property(p => p.JobType)
                 .IsRequired()
