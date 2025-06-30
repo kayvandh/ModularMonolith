@@ -14,6 +14,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using ModularMonolith.API.Attributes;
+using ModularMonolith.API.Extensions.RateLimiting;
 using ModularMonolith.API.Middlewares;
 using ModularMonolith.API.Settings;
 using ModularMonolith.Infrastructure;
@@ -138,7 +139,7 @@ builder.Services.AddScoped<ICacheService>(provider =>
         _ => new MemoryCacheService(provider.GetRequiredService<IMemoryCache>())
     };
 });
-
+builder.Services.AddRateLimitingWithLogging();
 
 //builder.Services.AddHealthChecks()
 //    .AddSqlServer(
@@ -190,10 +191,11 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseGeneralExceptionHandling();
-app.UseResponseCaching();
+//app.UseResponseCaching(); ignore default response cache and use my own
+app.UseResponseCache();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.UseRateLimiter();
 
 app.Run();

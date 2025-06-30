@@ -1,4 +1,6 @@
 ﻿using Framework.Cache.Interface;
+using Microsoft.Extensions.Options;
+using ModularMonolith.API.Settings;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -63,11 +65,13 @@ namespace ModularMonolith.API.Middlewares
     {
         private readonly RequestDelegate _next;
         private readonly ICacheService _cacheService;
+        private readonly CacheSettings _settings;
 
-        public ResponseCacheMiddleware(RequestDelegate next, ICacheService cacheService)
+        public ResponseCacheMiddleware(RequestDelegate next, ICacheService cacheService, IOptions<CacheSettings> settings)
         {
             _next = next;
             _cacheService = cacheService;
+            _settings = settings.Value;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -112,20 +116,19 @@ namespace ModularMonolith.API.Middlewares
 
             // Compute ETag (using a hash of the response body)
             var eTag = GenerateETag(body);
-            var maxAge = 60;
 
             // Cache the response
             var responseToCache = new CachedResponse
             {
                 Body = body,
                 ETag = eTag,
-                MaxAge = maxAge
+                MaxAge = _settings.ResponseCacheDurationSeconds
             };
-            await _cacheService.SetAsync(cacheKey, responseToCache, TimeSpan.FromSeconds(maxAge));
+            await _cacheService.SetAsync(cacheKey, responseToCache, TimeSpan.FromSeconds(_settings.ResponseCacheDurationSeconds));
 
             // Set headers and return response
             context.Response.Headers["ETag"] = eTag;
-            context.Response.Headers["Cache-Control"] = $"public,max-age={maxAge}";
+            context.Response.Headers["Cache-Control"] = $"public,max-age={_settings.ResponseCacheDurationSeconds}";
 
             memStream.Seek(0, SeekOrigin.Begin);
             await memStream.CopyToAsync(originalBody);
@@ -155,7 +158,7 @@ namespace ModularMonolith.API.Middlewares
 
     public static class ResponseCacheMiddlewareExtensions
     {
-        public static IApplicationBuilder UserResponseCache(this IApplicationBuilder app)
+        public static IApplicationBuilder UseResponseCache(this IApplicationBuilder app)
         {
             return app.UseMiddleware<ResponseCacheMiddleware>();
         }
